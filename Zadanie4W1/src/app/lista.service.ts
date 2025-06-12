@@ -2,63 +2,36 @@ import { Injectable } from '@angular/core';
 import { Ksiazka } from '../models/ksiazka';
 import { Observable, of } from 'rxjs';
 import { KsiazkaBody } from '../models/ksiazka-body';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ListaService {
-  private static idGen = 1;
+  private readonly baseURL = 'http://localhost:5006/api/Ksiazka'; 
 
-  private lista: Ksiazka[] = [
-    { id: ListaService.idGen++, tytul: "Zbrodnia i kara", autor: "Fiodor Dostojewski", gatunek: "Powieść psychologiczna", rok: 1866 },
-    { id: ListaService.idGen++, tytul: "Pan Tadeusz", autor: "Adam Mickiewicz", gatunek: "Epopeja narodowa", rok: 1834 },
-    { id: ListaService.idGen++, tytul: "Rok 1984", autor: "George Orwell", gatunek: "Dystopia", rok: 1949 },
-    { id: ListaService.idGen++, tytul: "Wiedźmin: Ostatnie życzenie", autor: "Andrzej Sapkowski", gatunek: "Fantasy", rok: 1993 },
-    { id: ListaService.idGen++, tytul: "Duma i uprzedzenie", autor: "Jane Austen", gatunek: "Romans", rok: 1813 }
-  ];
+  constructor(private httpClient: HttpClient) {}
 
   get(): Observable<Ksiazka[]> {
-    return of(this.lista);
+    return this.httpClient.get<Ksiazka[]>(this.baseURL);
   }
 
   getByID(id: number): Observable<Ksiazka> {
-    const ksiazka = this.lista.find(k => k.id === id);
-    if(ksiazka == null) {
-      throw new Error('Nie znaleziono wskazanej książki');
-    }
-    return of(ksiazka);
-  }
-
-  delete(id: number): Observable<void> {
-    this.lista = this.lista.filter(k => k.id !== id);
-    return of(undefined);
-  }
-
-  put(id: number, body: KsiazkaBody): Observable<void> {
-    const ksiazka = this.lista.find(k => k.id === id);
-    if(ksiazka == null) {
-      throw new Error('Nie znaleziono wskazanej książki');
-    }
-
-    ksiazka.autor = body.autor;
-    ksiazka.gatunek = body.gatunek;
-    ksiazka.rok = body.rok;
-    ksiazka.tytul = body.tytul;
-
-    return of(undefined);
+    const url = `${this.baseURL}/${id}`;
+    return this.httpClient.get<Ksiazka>(url);
   }
 
   post(body: KsiazkaBody): Observable<void> {
-    const ksiazka: Ksiazka = {
-      id: ListaService.idGen++,
-      autor: body.autor,
-      gatunek: body.gatunek,
-      rok: body.rok,
-      tytul: body.tytul
-    };
+    return this.httpClient.post<void>(this.baseURL, body);
+  }
 
-    this.lista.push(ksiazka);
+  put(id: number, body: KsiazkaBody): Observable<void> {
+    const url = `${this.baseURL}/${id}`;
+    return this.httpClient.put<void>(url, body);
+  }
 
-    return of(undefined);
+  delete(id: number): Observable<void> {
+    const url = `${this.baseURL}/${id}`;
+    return this.httpClient.delete<void>(url);
   }
 }
